@@ -10,7 +10,7 @@ export default function SideBar() {
   const { setPostList } = useContext(PostListContext);
 
   const getPostList = async () => {
-    const posts = await getList(userInfo.token);
+    const posts = await getList(userInfo.token, 0, 10);
     console.log(posts);
     let postList: Array<PostType> = [];
     if (posts) {

@@ -13,8 +13,13 @@ export const post = async (user_id: string, token: string, msg: string) => {
   console.log(res);
 };
 
-export const getList = async (token: string) => {
-  const url = baseUrl + `/post?token=${token}&records=10`;
+export const getList = async (
+  token: string,
+  start: number,
+  nr_records: number
+) => {
+  const url =
+    baseUrl + `/post?token=${token}&start=${start}&records=${nr_records}`;
   const res = await axios.get(url);
   return res.data;
 };
