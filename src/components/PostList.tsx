@@ -64,9 +64,7 @@ export default function PostList() {
       <SPageLink
         disabled={prevDisable}
         onClick={() => {
-          if (startNum - postDisplayNum >= 0) {
-            setStartNum((n) => n - postDisplayNum);
-          }
+          setStartNum((n) => n - postDisplayNum);
         }}
       >
         前のページ
