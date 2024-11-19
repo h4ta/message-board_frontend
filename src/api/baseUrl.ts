@@ -1,1 +1,1 @@
-export const baseUrl = "https://message-board-backend-gtum.onrender.com";
+export const baseUrl = process.env.REACT_APP_API_HOST;

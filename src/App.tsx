@@ -5,8 +5,6 @@ import { UserProvider } from "./providers/UserProvider";
 import Main from "./pages/Main";
 
 function App() {
-  console.log(process.env.REACT_APP_API_HOST);
-
   return (
     <div className="App">
       <UserProvider>
