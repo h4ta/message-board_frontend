@@ -17,6 +17,7 @@ export default function SideBar() {
       posts.forEach((p: PostType) => {
         postList.push({
           id: p.id,
+          user_id: p.user_id,
           user_name: p.user_name,
           content: p.content,
           created_at: new Date(p.created_at),

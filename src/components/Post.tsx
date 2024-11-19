@@ -1,13 +1,19 @@
-import React, { ReactNode } from "react";
-import { PostType } from "../providers/PostListProvider";
+import React, { ReactNode, useContext } from "react";
+import { PostListContext, PostType } from "../providers/PostListProvider";
 import styled from "styled-components";
+import { deletePost } from "../api/Post";
+import { UserContext } from "../providers/UserProvider";
 
 type Props = {
   post: PostType;
+  getPostList: (startNum: number) => void;
 };
 
 export default function Post(props: Props) {
-  const { post } = props;
+  const { post, getPostList } = props;
+  const { userInfo } = useContext(UserContext);
+  const { startNum } = useContext(PostListContext);
+
   const getDateStr = (dateObj: Date) => {
     const year = post.created_at.getFullYear();
     const month = post.created_at.getMonth() + 1;
@@ -36,7 +42,19 @@ export default function Post(props: Props) {
         <SName>{post.user_name}</SName>
         <SDate>{getDateStr(post.created_at)}</SDate>
       </div>
-      <div>{getLines(post.content)}</div>
+      <div>
+        <div>{getLines(post.content)}</div>
+        {post.user_id === userInfo.id && (
+          <button
+            onClick={async () => {
+              await deletePost(userInfo.token, post.id);
+              await getPostList(startNum);
+            }}
+          >
+            削除
+          </button>
+        )}
+      </div>
     </SPost>
   );
 }

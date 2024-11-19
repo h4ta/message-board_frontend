@@ -23,3 +23,9 @@ export const getList = async (
   const res = await axios.get(url);
   return res.data;
 };
+
+export const deletePost = async (token: string, id: number) => {
+  const url = baseUrl + `/post?token=${token}&id=${id}`;
+  const res = await axios.delete(url);
+  console.log(res);
+};

@@ -24,6 +24,7 @@ export default function PostList() {
       posts.forEach((p: PostType) => {
         postList.push({
           id: p.id,
+          user_id: p.user_id,
           user_name: p.user_name,
           content: p.content,
           created_at: new Date(p.created_at),
@@ -78,7 +79,7 @@ export default function PostList() {
         次のページ
       </SPageLink>
       {postList.map((p) => (
-        <Post key={p.id} post={p} />
+        <Post key={p.id} post={p} getPostList={getPostList} />
       ))}
     </SPostList>
   );
