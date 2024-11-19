@@ -7,7 +7,7 @@ import styled from "styled-components";
 export default function SideBar() {
   const [msg, setMsg] = useState("");
   const { userInfo } = useContext(UserContext);
-  const { setPostList } = useContext(PostListContext);
+  const { setPostList, setStartNum } = useContext(PostListContext);
 
   const getPostList = async () => {
     const posts = await getList(userInfo.token, 0, 10);
@@ -25,6 +25,7 @@ export default function SideBar() {
     }
 
     setPostList(postList);
+    setStartNum(0);
   };
 
   const onSendClick = async () => {

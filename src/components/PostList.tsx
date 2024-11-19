@@ -6,9 +6,10 @@ import { getList } from "../api/Post";
 import styled from "styled-components";
 
 export default function PostList() {
-  const { postList, setPostList } = useContext(PostListContext);
+  const { postList, setPostList, startNum, setStartNum } =
+    useContext(PostListContext);
   const { userInfo } = useContext(UserContext);
-  const [startNum, setStartNum] = useState(0);
+  // const [startNum, setStartNum] = useState(0);
   const [prevDisable, setPrevDisable] = useState(true);
   const [nextDisable, setNextDisable] = useState(false);
 
