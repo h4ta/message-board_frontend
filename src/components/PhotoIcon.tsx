@@ -112,18 +112,6 @@ export const PhotoIcon = (props: PropsType) => {
       return;
     }
 
-    // 変更前の画像が設定されている場合、その画像をfirebaseから削除
-    if (prevImgURL) {
-      const prevImgRef = ref(storage, prevImgURL);
-      deleteObject(prevImgRef)
-        .then(() => {
-          console.log(`${prevImgRef} を削除しました`);
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-    }
-
     const storageRef = ref(storage, `images/${uploadFile.name}`);
     await uploadBytes(storageRef, uploadFile)
       .then((snapshot) => {
@@ -146,6 +134,18 @@ export const PhotoIcon = (props: PropsType) => {
 
     // 親コンポーネントであるSideBar.tsxの画像URLを変更
     getChangedPicURL!(picURL);
+
+    // 変更前の画像が設定されていた場合、その画像をfirebaseから削除
+    if (prevImgURL) {
+      const prevImgRef = ref(storage, prevImgURL);
+      deleteObject(prevImgRef)
+        .then(() => {
+          console.log(`${prevImgRef} を削除しました`);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    }
   };
 
   return (
