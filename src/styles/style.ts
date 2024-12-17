@@ -1,3 +1,5 @@
+// 複数のファイルで使用する、使用しそうなスタイルをこのstyle.tsに記述している
+
 import styled from "styled-components";
 
 export const SSignInFrame = styled.div`
@@ -22,7 +24,7 @@ export const SSignInRow = styled.div`
 
 export const SButtonRow = styled.div`
   display: block;
-  margin-top: 15px;
+  margin-top: 5px;
   margin-bottom: 4px;
 `;
 
@@ -61,4 +63,11 @@ export const SWhiteButton = styled.button`
 export const SErrorMessage = styled.div`
   font-size: 12px;
   color: #ff7676;
+`;
+
+export const SCheckImg = styled.img`
+  max-width: 50%;
+  height: auto;
+  // display: block;
+  margin-bottom: 10px;
 `;

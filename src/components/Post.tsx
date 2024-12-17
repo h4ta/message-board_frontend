@@ -1,8 +1,11 @@
-import React, { ReactNode, useContext } from "react";
+import React, { ReactNode, useContext, useEffect, useState } from "react";
 import { PostListContext, PostType } from "../providers/PostListProvider";
 import styled from "styled-components";
 import { deletePost } from "../api/Post";
 import { UserContext } from "../providers/UserProvider";
+import { PhotoIcon } from "./PhotoIcon";
+import { defaultPicURL } from "../lib/default";
+import { getUserProfile } from "../api/User";
 
 type Props = {
   post: PostType;
@@ -13,6 +16,7 @@ export default function Post(props: Props) {
   const { post, getPostList } = props;
   const { userInfo } = useContext(UserContext);
   const { startNum } = useContext(PostListContext);
+  const [userPicURL, setUserPicURL] = useState("");
 
   const getDateStr = (dateObj: Date) => {
     const year = post.created_at.getFullYear();
@@ -36,25 +40,39 @@ export default function Post(props: Props) {
     });
   };
 
+  // 各ポストの画像URLを取得
+  useEffect(() => {
+    const myGetUser = async () => {
+      const userProf = await getUserProfile(post.user_name);
+      if (userProf.getData?.data) {
+        setUserPicURL(userProf.getData?.data.profile_pic_url);
+      }
+    };
+    myGetUser();
+  }, []);
+
   return (
     <SPost>
       <div>
-        <SName>{post.user_name}</SName>
+        {/* 画像が設定されていない場合、デフォルトの画像を表示 */}
+        <PhotoIcon size={30} src={userPicURL || defaultPicURL}></PhotoIcon>
+        {/* ユーザーネームがDBにない場合、"削除されたユーザー"と表示 */}
+        <SName>{post.user_name || "削除されたユーザー"}</SName>
         <SDate>{getDateStr(post.created_at)}</SDate>
       </div>
-      <div>
+      <SContent>
         <div>{getLines(post.content)}</div>
         {post.user_id === userInfo.id && (
-          <button
+          <SDeleteButton
             onClick={async () => {
               await deletePost(userInfo.token, post.id);
               await getPostList(startNum);
             }}
           >
             削除
-          </button>
+          </SDeleteButton>
         )}
-      </div>
+      </SContent>
     </SPost>
   );
 }
@@ -67,6 +85,7 @@ const SPost = styled.div`
 `;
 
 const SName = styled.span`
+  margin-left: 3px;
   font-size: small;
   color: #000044;
 `;
@@ -75,4 +94,18 @@ const SDate = styled.span`
   margin-left: 8px;
   font-size: small;
   color: #000044;
+`;
+
+const SContent = styled.div`
+  margin-left: 3px;
+`;
+
+const SDeleteButton = styled.button`
+  width: 50px;
+  height: 25px;
+  font-size: 12px;
+  background-color: #f0f0f0;
+  color: #ff0000;
+  border-radius: 8px;
+  margin-bottom: 5px;
 `;

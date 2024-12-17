@@ -1,13 +1,25 @@
 import axios from "axios";
 import { baseUrl } from "./baseUrl";
-import { ErrorMessages, ReceivedErrors } from "../types/Type";
-import { error, log } from "console";
+import { ReceivedErrors } from "../types/Type";
 
 export const getUser = async (user_id: number, token: string) => {
   const url = baseUrl + `/user/${user_id}?token=${token}`;
   const res = await axios.get(url);
 
   return res.data;
+};
+
+// ユーザーの公開情報(名前、アイコン画像URL)を取得 (認可は必要としない)
+export const getUserProfile = async (userName: string) => {
+  const url = baseUrl + `/user/profile/?name=${userName}`;
+  console.log(url);
+
+  try {
+    const res = await axios.get(url);
+    return { getData: res, error: null };
+  } catch (error) {
+    return { getData: null, error: error };
+  }
 };
 
 export const sign_up = async (user_id: string, email: string, pass: string) => {
@@ -21,10 +33,6 @@ export const sign_up = async (user_id: string, email: string, pass: string) => {
 
   const res: ReceivedErrors = await axios.post(url, data);
   return res;
-  // const res = await axios.post(url, data);
-  // console.log(res);
-
-  // return res.data;
 };
 
 export const registerUser = async (id: string) => {
@@ -66,6 +74,20 @@ export const checkTempUserExist = async (uuid: string) => {
 
   try {
     const res = await axios.get(url);
+    return { getData: res, error: null };
+  } catch (error) {
+    console.log(error);
+    return { getData: null, error: error };
+  }
+};
+
+// DBに保存されているプロフィール画像のURLを変更
+export const changeProfPic = async (name: string, newPicURL: string) => {
+  const url = baseUrl + `/user/edit/picture/?name=${name}`;
+  console.log(url);
+
+  try {
+    const res = await axios.post(url, { fileURL: newPicURL });
     return { getData: res, error: null };
   } catch (error) {
     console.log(error);

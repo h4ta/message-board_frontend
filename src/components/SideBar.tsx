@@ -1,11 +1,17 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { UserContext } from "../providers/UserProvider";
 import { getList, post } from "../api/Post";
 import { PostListContext, PostType } from "../providers/PostListProvider";
 import styled from "styled-components";
+import { PhotoIcon } from "./PhotoIcon";
+import { defaultPicURL } from "../lib/default";
+import { getUser, getUserProfile } from "../api/User";
 
 export default function SideBar() {
   const [msg, setMsg] = useState("");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [profPicURL, setProfPicURL] = useState("");
   const { userInfo } = useContext(UserContext);
   const { setPostList, setStartNum } = useContext(PostListContext);
 
@@ -34,21 +40,56 @@ export default function SideBar() {
     await getPostList();
   };
 
+  // 子コンポーネントであるPhotoIcon.tsxから、変更した画像のURLを取得するためのコールバック関数
+  const getChangedPicURL = (newPicURL: string) => {
+    setProfPicURL(newPicURL);
+  };
+
+  // ユーザーの名前、メールアドレス、プロフィール画像を取得
+  useEffect(() => {
+    const myGetUser = async () => {
+      const user = await getUser(userInfo.id, userInfo.token);
+      setName(user.name);
+      setEmail(user.email);
+      const userProf = await getUserProfile(user.name);
+      console.log(userProf.getData?.data.profile_pic_url);
+      if (userProf.getData?.data) {
+        setProfPicURL(userProf.getData?.data.profile_pic_url);
+        console.log(
+          `URLをセットしました。${userProf.getData?.data.profile_pic_url}`
+        );
+      }
+    };
+    myGetUser();
+  }, []);
+
   return (
-    <SSideBar>
-      <SSideBarRow>hoge</SSideBarRow>
-      <SSideBarRow>hoge@example.com</SSideBarRow>
-      <SSideBarRow>
-        <SSideBarTextArea
-          rows={4}
-          value={msg}
-          onChange={(evt) => setMsg(evt.target.value)}
-        ></SSideBarTextArea>
-      </SSideBarRow>
-      <SSideBarRow>
-        <SSideBarButton onClick={onSendClick}>送信</SSideBarButton>
-      </SSideBarRow>
-    </SSideBar>
+    <>
+      <SSideBar>
+        <SSideBarRow>
+          <PhotoIcon
+            size={60}
+            src={profPicURL || defaultPicURL}
+            isProfilePic={true}
+            name={name}
+            prevImgURL={profPicURL}
+            getChangedPicURL={getChangedPicURL}
+          ></PhotoIcon>
+          {name}
+        </SSideBarRow>
+        <SSideBarRow>{email}</SSideBarRow>
+        <SSideBarRow>
+          <SSideBarTextArea
+            rows={4}
+            value={msg}
+            onChange={(evt) => setMsg(evt.target.value)}
+          ></SSideBarTextArea>
+        </SSideBarRow>
+        <SSideBarRow>
+          <SSideBarButton onClick={onSendClick}>送信</SSideBarButton>
+        </SSideBarRow>
+      </SSideBar>
+    </>
   );
 }
 
