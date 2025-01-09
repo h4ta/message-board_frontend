@@ -1,14 +1,15 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import styled from "styled-components";
 import { sign_up } from "../api/User";
 import { ReceivedErrors } from "../types/Type";
 import { Alert } from "react-bootstrap";
 import {
   SBlackButton,
   SButtonRow,
+  SCpatchaErrorMessage,
   SErrorMessage,
   SInput,
+  SSignInCaptchaRow,
   SSignInFrame,
   SSignInInput,
   SSignInLabel,
@@ -16,6 +17,9 @@ import {
   SWhiteButton,
 } from "../styles/style";
 import toast, { Toaster } from "react-hot-toast";
+import ReCAPTCHA from "react-google-recaptcha";
+import { useRecaptcha } from "../hooks/useRecaptcha";
+import { EndAnimationMethod, SubmitButton } from "./SubmitButton";
 
 export default function SignUp() {
   const navigate = useNavigate();
@@ -28,6 +32,17 @@ export default function SignUp() {
   const [isLoading, setIsLoading] = useState(false);
   const [registerId, setRegisterId] = useState("");
 
+  const { captchaToken, recaptchaRef, handleRecaptcha } = useRecaptcha();
+  const [captchaMessage, setCaptchaMessage] = useState("");
+
+  // 送信アニメーション完了処理 (開始処理(startSubmitAnimation関数)はボタンのクリックと同時に実行されるようSubmitButtonコンポーネントで実装されている)
+  // このrefをpropsで渡すことで、子コンポーネント(SubmitButton)の関数endSubmitAnimationを参照で取得する
+  const endSubmitAnimationRef = useRef<EndAnimationMethod | null>(null);
+  const finishSubmit = () => {
+    setIsLoading(false);
+    endSubmitAnimationRef.current?.endSubmitAnimation();
+  };
+
   const onSignUpClick = async () => {
     setIsLoading(true);
     // 送信前に入力値のバリデーションを行う
@@ -35,6 +50,7 @@ export default function SignUp() {
     setUserIdMessage("");
     setEmailMessage("");
     setPassMessage("");
+    setCaptchaMessage("");
     if (userId === "") {
       setUserIdMessage("入力してください");
       isInvalid = true;
@@ -47,13 +63,24 @@ export default function SignUp() {
       setPassMessage("入力してください");
       isInvalid = true;
     }
+
+    if (!captchaToken) {
+      setCaptchaMessage("クリックしてください");
+      isInvalid = true;
+    }
+
     if (isInvalid) {
-      setIsLoading(false);
+      finishSubmit();
       return;
     }
 
     // 登録情報を送信し、エラーメッセージを配列で受け取る。登録に成功したとき、受け取る配列は空。
-    const ret: ReceivedErrors = await sign_up(userId, email, pass);
+    const ret: ReceivedErrors = await sign_up(
+      userId,
+      email,
+      pass,
+      captchaToken
+    );
     console.log(ret.data);
 
     if (ret.data.includes("userId_duplicated")) {
@@ -68,14 +95,27 @@ export default function SignUp() {
       setEmailMessage("有効なメールアドレスを入力してください");
     }
 
+    if (ret.data.includes("reCAPTCHA failed")) {
+      setCaptchaMessage("reCAPTCHAに失敗しました。もう一度お試しください。");
+      handleRecaptcha("");
+      if (recaptchaRef.current) {
+        recaptchaRef.current.reset();
+      }
+    }
+
     if (ret.data.length === 0) {
       setRegisterId(userId);
-      setIsLoading(false);
+      finishSubmit();
+
+      // 送信後、reCAPTCHAをリセット(登録成功時)
+      recaptchaRef.current?.reset();
       return;
     }
 
     toast.error("メールの送信に失敗しました。時間を置いてやり直してください。");
-    setIsLoading(false);
+    finishSubmit();
+    // 送信後、reCAPTCHAをリセット(登録失敗時)
+    recaptchaRef.current?.reset();
   };
 
   return (
@@ -132,14 +172,21 @@ export default function SignUp() {
           <SErrorMessage>{passMessage}</SErrorMessage>
         </SSignInRow>
 
+        <SSignInCaptchaRow>
+          <ReCAPTCHA
+            sitekey={process.env.REACT_APP_RECAPTCHA_SITE_KEY!}
+            onChange={handleRecaptcha}
+          />
+          <SCpatchaErrorMessage>{captchaMessage}</SCpatchaErrorMessage>
+        </SSignInCaptchaRow>
+
         <SButtonRow>
-          <SBlackButton
-            type="button"
-            onClick={onSignUpClick}
-            disabled={isLoading}
-          >
-            {isLoading ? "..." : "Register"}
-          </SBlackButton>
+          <SubmitButton
+            name="Register"
+            onClickFunc={onSignUpClick}
+            isLoading={isLoading}
+            ref={endSubmitAnimationRef}
+          ></SubmitButton>
           <SWhiteButton
             type="button"
             onClick={() => navigate("/")}

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { checkTempUserExist, passReset } from "../api/User";
@@ -13,6 +13,7 @@ import {
   SSignInLabel,
   SSignInRow,
 } from "../styles/style";
+import { EndAnimationMethod, SubmitButton } from "../components/SubmitButton";
 
 export default function PasswordReset() {
   const [password, setPassword] = useState("");
@@ -25,6 +26,14 @@ export default function PasswordReset() {
   const queryParams = new URLSearchParams(search);
   const uuid: string = queryParams.get("id")!;
   const [isValid, setIsValid] = useState(true);
+
+  // 送信アニメーション完了処理 (開始処理(startSubmitAnimation関数)はボタンのクリックと同時に実行されるようSubmitButtonコンポーネントで実装されている)
+  // このrefをpropsで渡すことで、子コンポーネント(SubmitButton)の関数endSubmitAnimationを参照で取得する
+  const endSubmitAnimationRef = useRef<EndAnimationMethod | null>(null);
+  const finishSubmit = () => {
+    setIsLoading(false);
+    endSubmitAnimationRef.current?.endSubmitAnimation();
+  };
 
   const checkValidLink = async (checkId: string) => {
     const ret = await checkTempUserExist(checkId);
@@ -49,7 +58,7 @@ export default function PasswordReset() {
 
     if (password === "") {
       setPassMessage("入力してください");
-      setIsLoading(false);
+      finishSubmit();
       return;
     }
 
@@ -57,10 +66,10 @@ export default function PasswordReset() {
 
     if (ret.error) {
       toast.error("パスワードの再設定に失敗しました。やり直してください。");
-      setIsLoading(false);
+      finishSubmit();
       return;
     }
-    setIsLoading(false);
+    finishSubmit();
     setIsReseted(true);
   };
 
@@ -99,13 +108,12 @@ export default function PasswordReset() {
             </SSignInRow>
 
             <SSignInRow>
-              <SBlackButton
-                type="button"
-                disabled={isLoading}
-                onClick={onPassResetClick}
-              >
-                {isLoading ? "..." : "Reset"}
-              </SBlackButton>
+              <SubmitButton
+                name="Reset"
+                onClickFunc={onPassResetClick}
+                isLoading={isLoading}
+                ref={endSubmitAnimationRef}
+              ></SubmitButton>
             </SSignInRow>
           </SSignInFrame>
         )

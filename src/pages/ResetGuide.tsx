@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { sendPassResetMail } from "../api/User";
@@ -15,6 +15,7 @@ import {
   SSignInRow,
   SWhiteButton,
 } from "../styles/style";
+import { EndAnimationMethod, SubmitButton } from "../components/SubmitButton";
 
 export default function ResetGuide() {
   const [email, setEmail] = useState("");
@@ -23,12 +24,20 @@ export default function ResetGuide() {
   const [isSended, setIsSended] = useState(false);
   const navigate = useNavigate();
 
+  // 送信アニメーション完了処理 (開始処理(startSubmitAnimation関数)はボタンのクリックと同時に実行されるようSubmitButtonコンポーネントで実装されている)
+  // このrefをpropsで渡すことで、子コンポーネント(SubmitButton)の関数endSubmitAnimationを参照で取得する
+  const endSubmitAnimationRef = useRef<EndAnimationMethod | null>(null);
+  const finishSubmit = () => {
+    setIsLoading(false);
+    endSubmitAnimationRef.current?.endSubmitAnimation();
+  };
+
   const onSendMailClick = async () => {
     setIsLoading(true);
     setEmailMessage("");
 
     if (email === "") {
-      setIsLoading(false);
+      finishSubmit();
       setEmailMessage("入力してください");
       return;
     }
@@ -37,12 +46,12 @@ export default function ResetGuide() {
     if (ret.error) {
       // 未登録メールアドレスを入力したときはこのエラーは表示されない。メール送信時に何らかのエラーが起こった時、このエラーを表示する
       toast.error("メール送信に失敗しました。やり直してください。");
-      setIsLoading(false);
+      finishSubmit();
       return;
     }
 
     setIsSended(true);
-    setIsLoading(false);
+    finishSubmit();
   };
 
   return (
@@ -78,13 +87,12 @@ export default function ResetGuide() {
         </SSignInRow>
 
         <SButtonRow>
-          <SBlackButton
-            type="button"
-            disabled={isLoading}
-            onClick={onSendMailClick}
-          >
-            {isLoading ? "..." : "Send Mail"}
-          </SBlackButton>
+          <SubmitButton
+            name="Send Main"
+            onClickFunc={onSendMailClick}
+            isLoading={isLoading}
+            ref={endSubmitAnimationRef}
+          ></SubmitButton>
           <SWhiteButton
             type="button"
             onClick={() => navigate("/")}

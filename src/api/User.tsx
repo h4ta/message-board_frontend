@@ -22,13 +22,19 @@ export const getUserProfile = async (userName: string) => {
   }
 };
 
-export const sign_up = async (user_id: string, email: string, pass: string) => {
+export const sign_up = async (
+  user_id: string,
+  email: string,
+  pass: string,
+  recaptcha_token: string
+) => {
   const url = baseUrl + `/user`;
   console.log(url);
   const data = {
     name: user_id,
     email,
     password: pass,
+    recaptcha_token,
   };
 
   const res: ReceivedErrors = await axios.post(url, data);

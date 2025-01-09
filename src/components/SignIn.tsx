@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useContext, useRef, useState } from "react";
 import { sign_in } from "../api/Auth";
 import { Link, useNavigate } from "react-router-dom";
 import { UserContext } from "../providers/UserProvider";
@@ -13,6 +13,7 @@ import {
   SSignInRow,
   SWhiteButton,
 } from "../styles/style";
+import { EndAnimationMethod, SubmitButton } from "./SubmitButton";
 
 export default function SignIn() {
   const navigate = useNavigate();
@@ -21,6 +22,14 @@ export default function SignIn() {
   const [isLoading, setIsLoading] = useState(false);
   const { setUserInfo } = useContext(UserContext);
 
+  // 送信アニメーション完了処理 (開始処理(startSubmitAnimation関数)はボタンのクリックと同時に実行されるようSubmitButtonコンポーネントで実装されている)
+  // このrefをpropsで渡すことで、子コンポーネント(SubmitButton)の関数endSubmitAnimationを参照で取得する
+  const endSubmitAnimationRef = useRef<EndAnimationMethod | null>(null);
+  const finishSubmit = () => {
+    setIsLoading(false);
+    endSubmitAnimationRef.current?.endSubmitAnimation();
+  };
+
   const onSignInClick = async () => {
     setIsLoading(true);
     const ret = await sign_in(userId, pass);
@@ -28,7 +37,7 @@ export default function SignIn() {
 
     if (ret.error) {
       toast.error("ログインに失敗しました。IDまたはパスワードが不正です。");
-      setIsLoading(false);
+      finishSubmit();
       return;
     }
 
@@ -41,7 +50,7 @@ export default function SignIn() {
       });
       navigate("/main");
     }
-    setIsLoading(false);
+    finishSubmit();
   };
 
   return (
@@ -78,13 +87,12 @@ export default function SignIn() {
         <Link to="/reset">パスワードを忘れた場合</Link>
 
         <SButtonRow>
-          <SBlackButton
-            type="button"
-            onClick={onSignInClick}
-            disabled={isLoading}
-          >
-            {isLoading ? "..." : "Login"}
-          </SBlackButton>
+          <SubmitButton
+            name="Login"
+            onClickFunc={onSignInClick}
+            isLoading={isLoading}
+            ref={endSubmitAnimationRef}
+          ></SubmitButton>
           <SWhiteButton
             type="button"
             onClick={() => navigate("/signup")}

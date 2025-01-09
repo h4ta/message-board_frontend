@@ -22,6 +22,16 @@ export const SSignInRow = styled.div`
   margin-bottom: 4px;
 `;
 
+export const SSignInCaptchaRow = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 80%;
+  margin-left: 50px;
+  margin-right: 0px;
+  margin-top: 10px;
+  margin-bottom: 4px;
+`;
+
 export const SButtonRow = styled.div`
   display: block;
   margin-top: 5px;
@@ -63,6 +73,12 @@ export const SWhiteButton = styled.button`
 export const SErrorMessage = styled.div`
   font-size: 12px;
   color: #ff7676;
+`;
+
+export const SCpatchaErrorMessage = styled.div`
+  font-size: 12px;
+  color: #ff7676;
+  margin-right: 15px;
 `;
 
 export const SCheckImg = styled.img`
