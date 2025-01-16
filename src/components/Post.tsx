@@ -6,6 +6,7 @@ import { UserContext } from "../providers/UserProvider";
 import { PhotoIcon } from "./PhotoIcon";
 import { defaultPicURL } from "../lib/default";
 import { getUserProfile } from "../api/User";
+import { ImgLoader } from "./ImgLoader";
 
 type Props = {
   post: PostType;
@@ -44,8 +45,13 @@ export default function Post(props: Props) {
   useEffect(() => {
     const myGetUser = async () => {
       const userProf = await getUserProfile(post.user_name);
-      if (userProf.getData?.data) {
+      if (userProf.getData?.data.profile_pic_url !== null) {
+        console.log(userProf.getData?.data.profile_pic_url);
+
         setUserPicURL(userProf.getData?.data.profile_pic_url);
+      } else {
+        // プロフィール画像が登録されていない場合
+        setUserPicURL(defaultPicURL);
       }
     };
     myGetUser();
@@ -54,8 +60,13 @@ export default function Post(props: Props) {
   return (
     <SPost>
       <div>
-        {/* 画像が設定されていない場合、デフォルトの画像を表示 */}
-        <PhotoIcon size={30} src={userPicURL || defaultPicURL}></PhotoIcon>
+        <div>
+          {userPicURL !== "" ? (
+            <PhotoIcon size={30} src={userPicURL}></PhotoIcon>
+          ) : (
+            <ImgLoader widthSize={30} heightSize={30} />
+          )}
+        </div>
         {/* ユーザーネームがDBにない場合、"削除されたユーザー"と表示 */}
         <SName>{post.user_name || "削除されたユーザー"}</SName>
         <SDate>{getDateStr(post.created_at)}</SDate>

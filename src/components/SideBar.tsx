@@ -6,6 +6,7 @@ import styled from "styled-components";
 import { PhotoIcon } from "./PhotoIcon";
 import { defaultPicURL } from "../lib/default";
 import { getUser, getUserProfile } from "../api/User";
+import { ImgLoader } from "./ImgLoader";
 
 export default function SideBar() {
   const [msg, setMsg] = useState("");
@@ -38,6 +39,7 @@ export default function SideBar() {
   const onSendClick = async () => {
     await post(String(userInfo.id), userInfo.token, msg);
     await getPostList();
+    setMsg("");
   };
 
   // 子コンポーネントであるPhotoIcon.tsxから、変更した画像のURLを取得するためのコールバック関数
@@ -55,9 +57,9 @@ export default function SideBar() {
       console.log(userProf.getData?.data.profile_pic_url);
       if (userProf.getData?.data) {
         setProfPicURL(userProf.getData?.data.profile_pic_url);
-        console.log(
-          `URLをセットしました。${userProf.getData?.data.profile_pic_url}`
-        );
+      } else {
+        // プロフィール画像が登録されていない場合
+        setProfPicURL(defaultPicURL);
       }
     };
     myGetUser();
@@ -67,14 +69,20 @@ export default function SideBar() {
     <>
       <SSideBar>
         <SSideBarRow>
-          <PhotoIcon
-            size={60}
-            src={profPicURL || defaultPicURL}
-            isProfilePic={true}
-            name={name}
-            prevImgURL={profPicURL}
-            getChangedPicURL={getChangedPicURL}
-          ></PhotoIcon>
+          <div>
+            {profPicURL !== "" ? (
+              <PhotoIcon
+                size={60}
+                src={profPicURL}
+                isProfilePic={true}
+                name={name}
+                prevImgURL={profPicURL}
+                getChangedPicURL={getChangedPicURL}
+              ></PhotoIcon>
+            ) : (
+              <ImgLoader widthSize={60} heightSize={60} />
+            )}
+          </div>
           {name}
         </SSideBarRow>
         <SSideBarRow>{email}</SSideBarRow>
